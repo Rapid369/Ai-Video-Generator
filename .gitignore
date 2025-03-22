@@ -1,0 +1,61 @@
+# Environment variables and API keys
+.env
+*.env
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# Generated media files
+image/
+video/
+music/
+*.mp3
+*.mp4
+*.wav
+*.png
+*.jpg
+*.jpeg
+*.aac
+*.opus
+*.flac
+*.pcm
+final_output.mp4
+output.mp3
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Local data
+last_ideas.json

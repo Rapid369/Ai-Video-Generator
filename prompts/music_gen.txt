@@ -1,0 +1,3 @@
+  "prompt": "idea from openai api output, ex: "POV: You are entering a secret vampire gathering in Vienna, 1722",
+  "instrumental": "boolean, True",
+  "prompt_strength": "float (default: 2.3)",

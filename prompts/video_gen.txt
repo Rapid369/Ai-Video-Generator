@@ -1,0 +1,11 @@
+prompt: POV, action, moving
+
+negative_prompt: blurry, unatural movements
+
+aspect_ratio: 9:16 
+
+start_image: image from flux_image_pro
+
+cfg_scale: 0.5
+
+duration: 10

@@ -1,4 +1,4 @@
-# AI Video Pipeline Generator
+# AI Video Generator Pipeline 
 
 An automated pipeline that generates creative videos using multiple AI models. The pipeline creates unique ideas, converts them into images, videos, and adds AI-generated music and voice narration.
 

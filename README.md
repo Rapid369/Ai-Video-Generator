@@ -4,7 +4,7 @@ An automated pipeline that generates creative videos using multiple AI models. T
 
 ## Features
 
-- Idea generation using GPT-4
+- Idea generation using GPT-4o
 - Image generation using Flux Image Pro
 - Video generation using Kling AI
 - Music generation using SonAuto

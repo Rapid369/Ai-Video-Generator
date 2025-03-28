@@ -206,7 +206,7 @@ def generate_video(image_path, prompt):
             settings[key.strip()] = value.strip()
     
     # Prepare video generation payload
-    duration = int(settings.get('duration', 8))
+    duration = int(settings.get('duration', 10))
     aspect_ratio = settings.get('aspect_ratio', '9:16')
     cfg_scale = float(settings.get('cfg_scale', 0.5))
     negative_prompt = settings.get('negative_prompt', '')
@@ -362,7 +362,7 @@ def generate_voice_dialog(idea):
 
     In the dialog question, avoid cringe cliche terms like "secrets", "unveil", "moon", "breath etc. Please be creative and inspired by the idea.
     
-    Also determine whether this dialog questions would best be spoken by a male voice (Ballad) or female voice (Shimmer).
+    Also determine whether this dialog questions would best be spoken by a male voice (Ballad) or female voice (Shimmer) based on the archetype of the idea.
     
     IMPORTANT: You MUST provide detailed voice instructions that describe how the line should be delivered.
     
@@ -373,7 +373,7 @@ def generate_voice_dialog(idea):
     Create detailed voice instructions similar to these examples that fit the idea and the dialog.
 
     Your response MUST follow this exact format:
-    Voice: [Ballad or Shimmer]
+    Voice: [Ballad or Shimmer] (based on the archetype of the idea)
     Dialog: [the dialog question]
     Instructions: [detailed speaking instructions including tone, emotion, pacing, emphasis, etc.]
     """

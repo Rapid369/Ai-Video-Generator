@@ -4,20 +4,30 @@
 
 {% block content %}
 <section class="hero py-5">
-    <div class="row align-items-center">
-        <div class="col-lg-6">
-            <h1 class="display-4 fw-bold mb-4">Create Amazing Videos with AI</h1>
-            <p class="lead mb-4">
-                Generate professional-quality videos in minutes using our AI-powered platform.
-                From idea generation to final production, our system handles everything automatically.
-            </p>
-            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 me-md-2">Get Started</a>
-                <a href="#features" class="btn btn-outline-secondary btn-lg px-4">Learn More</a>
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Create Amazing Videos with AI</h1>
+                <p class="lead mb-4">
+                    Generate professional-quality videos in minutes using our AI-powered platform.
+                    From idea generation to final production, our system handles everything automatically.
+                </p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 me-md-2">Get Started</a>
+                    <a href="#features" class="btn btn-outline-secondary btn-lg px-4">Learn More</a>
+                </div>
             </div>
-        </div>
-        <div class="col-lg-6">
-            <img src="{{ url_for('static', filename='img/hero-image.jpg') }}" alt="AI Video Generator" class="img-fluid rounded shadow-lg">
+            <div class="col-lg-6">
+                <div class="hero-image-container">
+                    <div class="hero-image-placeholder rounded shadow-lg d-flex align-items-center justify-content-center text-white p-5">
+                        <div class="text-center">
+                            <i class="bi bi-film fs-1 mb-3"></i>
+                            <h3>AI Video Generator</h3>
+                            <p>Transform ideas into stunning videos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -133,7 +143,7 @@
                     <p class="card-text">"This platform has revolutionized our marketing content. We can create professional videos in minutes instead of days."</p>
                     <div class="d-flex align-items-center mt-3">
                         <div class="flex-shrink-0">
-                            <img src="{{ url_for('static', filename='img/testimonial1.jpg') }}" alt="Testimonial" class="rounded-circle" width="50">
+                            <div class="testimonial-avatar rounded-circle d-flex align-items-center justify-content-center">SJ</div>
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <h5 class="mb-0">Sarah Johnson</h5>
@@ -149,7 +159,7 @@
                     <p class="card-text">"As a content creator, this tool has been a game-changer. I can produce more high-quality videos with less effort."</p>
                     <div class="d-flex align-items-center mt-3">
                         <div class="flex-shrink-0">
-                            <img src="{{ url_for('static', filename='img/testimonial2.jpg') }}" alt="Testimonial" class="rounded-circle" width="50">
+                            <div class="testimonial-avatar rounded-circle d-flex align-items-center justify-content-center">JD</div>
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <h5 class="mb-0">Michael Chen</h5>
@@ -165,7 +175,7 @@
                     <p class="card-text">"The quality of the AI-generated content is impressive. Our social media engagement has increased by 300% since we started using this service."</p>
                     <div class="d-flex align-items-center mt-3">
                         <div class="flex-shrink-0">
-                            <img src="{{ url_for('static', filename='img/testimonial3.jpg') }}" alt="Testimonial" class="rounded-circle" width="50">
+                            <div class="testimonial-avatar rounded-circle d-flex align-items-center justify-content-center">MC</div>
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <h5 class="mb-0">Emily Rodriguez</h5>

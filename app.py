@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
+from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -338,6 +338,15 @@ mail.init_app(app)
 # Initialize storage
 from storage import StorageManager
 storage_manager = StorageManager(app)
+
+# Theme setting route
+@app.route('/set_theme', methods=['POST'])
+def set_theme():
+    """Set the theme preference (light or dark)."""
+    data = request.json
+    theme = data.get('theme', 'light')
+    session['theme'] = theme
+    return jsonify({'status': 'success', 'theme': theme})
 
 # Create database tables
 with app.app_context():

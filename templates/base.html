@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="{{ session.get('theme', 'light') }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,9 +8,33 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_css %}{% endblock %}
+    <script>
+        // Check for saved theme preference or use preferred color scheme
+        const getStoredTheme = () => localStorage.getItem('theme')
+        const getPreferredTheme = () => {
+            const storedTheme = getStoredTheme()
+            if (storedTheme) {
+                return storedTheme
+            }
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        }
+
+        // Apply the theme by setting the data-bs-theme attribute
+        const setTheme = theme => {
+            document.documentElement.setAttribute('data-bs-theme', theme)
+            localStorage.setItem('theme', theme)
+            // Update the icon in the navbar
+            if (document.getElementById('theme-icon')) {
+                document.getElementById('theme-icon').className = theme === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill'
+            }
+        }
+
+        // Set theme on page load
+        setTheme(getPreferredTheme())
+    </script>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('index') }}">AI Video Generator</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -31,23 +55,29 @@
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav">
+                    <!-- Theme Toggle Button -->
+                    <li class="nav-item me-3 d-flex align-items-center">
+                        <button class="btn btn-sm rounded-circle" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+                            <i class="bi bi-sun-fill" id="theme-icon"></i>
+                        </button>
+                    </li>
                     {% if current_user.is_authenticated %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            {{ current_user.name or current_user.email }}
+                            <i class="bi bi-person-circle me-1"></i> {{ current_user.name or current_user.email }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ url_for('account') }}">Account Settings</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('account') }}"><i class="bi bi-gear me-2"></i>Account Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                        <a class="nav-link" href="{{ url_for('login') }}"><i class="bi bi-box-arrow-in-right me-1"></i>Login</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                        <a class="nav-link" href="{{ url_for('register') }}"><i class="bi bi-person-plus me-1"></i>Register</a>
                     </li>
                     {% endif %}
                 </ul>
@@ -74,15 +104,60 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-dark text-white py-4 mt-5">
+    <footer class="mt-5">
         <div class="container">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-lg-4 mb-4 mb-lg-0">
                     <h5>AI Video Generator</h5>
-                    <p>Create amazing videos with AI technology</p>
+                    <p>Create amazing videos with AI - From idea to final production in minutes</p>
+                    <div class="social-icons mt-3">
+                        <a href="#" class="me-3"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="me-3"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="me-3"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="me-3"><i class="bi bi-youtube"></i></a>
+                    </div>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <p>&copy; 2023 AI Video Generator. All rights reserved.</p>
+                <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+                    <h5>Platform</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('account') }}">Account</a></li>
+                        {% else %}
+                        <li><a href="{{ url_for('login') }}">Login</a></li>
+                        <li><a href="{{ url_for('register') }}">Register</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+                    <h5>Resources</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">API Reference</a></li>
+                        <li><a href="#">Tutorials</a></li>
+                        <li><a href="#">Blog</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <h5>Contact</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="mailto:info@aivideogenerator.com"><i class="bi bi-envelope me-2"></i>info@aivideogenerator.com</a></li>
+                        <li><a href="#"><i class="bi bi-chat-dots me-2"></i>Live Chat</a></li>
+                        <li><a href="#"><i class="bi bi-question-circle me-2"></i>Help Center</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-md-0">&copy; 2023 AI Video Generator. All rights reserved.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <a href="#">Privacy Policy</a>
+                        <span class="mx-2">|</span>
+                        <a href="#">Terms of Service</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -90,6 +165,31 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Toggle between light and dark theme
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme')
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark'
+            setTheme(newTheme)
+
+            // Send theme preference to server
+            fetch('{{ url_for("set_theme") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ theme: newTheme }),
+            })
+        }
+
+        // Update theme icon based on current theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme')
+            if (document.getElementById('theme-icon')) {
+                document.getElementById('theme-icon').className = currentTheme === 'dark' ? 'bi bi-moon-fill' : 'bi bi-sun-fill'
+            }
+        })
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

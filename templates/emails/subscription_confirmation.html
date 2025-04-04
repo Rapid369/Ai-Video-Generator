@@ -1,0 +1,30 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Subscription Confirmation{% endblock %}
+
+{% block content %}
+<h2>Subscription Confirmation</h2>
+
+<p>Hi {{ user.name or 'there' }},</p>
+
+<p>Thank you for subscribing to our {{ plan_details.name }} plan!</p>
+
+<p>Your subscription is now active and you can start enjoying all the benefits of the {{ plan_details.name }} plan.</p>
+
+<h3>Plan Details:</h3>
+<ul>
+    {% for key, value in plan_details.features.items() %}
+    <li><strong>{{ key|replace('_', ' ')|capitalize }}:</strong> {{ value }}</li>
+    {% endfor %}
+</ul>
+
+<p>Your subscription will be automatically renewed on {{ subscription.current_period_end.strftime('%B %d, %Y') }}.</p>
+
+<div class="text-center mt-4 mb-4">
+    <a href="{{ url_for('dashboard', _external=True) }}" class="button">Go to Dashboard</a>
+</div>
+
+<p>If you have any questions or need assistance, feel free to contact our support team.</p>
+
+<p>Best regards,<br>The AI Video Generator Team</p>
+{% endblock %}

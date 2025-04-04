@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block title %}Account Settings - AI Video Generator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card mb-4">
+            <div class="card-header">
+                Account Navigation
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="#profile" class="list-group-item list-group-item-action active" data-bs-toggle="list">Profile</a>
+                <a href="#api-keys" class="list-group-item list-group-item-action" data-bs-toggle="list">API Keys</a>
+                <a href="#subscription" class="list-group-item list-group-item-action" data-bs-toggle="list">Subscription</a>
+                <a href="#usage" class="list-group-item list-group-item-action" data-bs-toggle="list">Usage</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="profile">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Profile Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('account') }}">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ current_user.name or '' }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email address</label>
+                                <input type="email" class="form-control" id="email" value="{{ current_user.email }}" disabled>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="api-keys">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">API Keys</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-4">
+                            You can use your own API keys for the following services. If not provided, we'll use our shared keys (with usage limits).
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#apiKeysHelpModal">Need help getting API keys?</a>
+                        </p>
+                        <form method="POST" action="{{ url_for('account') }}">
+                            <div class="mb-3">
+                                <label for="openai_api_key" class="form-label">OpenAI API Key <a href="#" data-bs-toggle="modal" data-bs-target="#apiKeysHelpModal" onclick="document.getElementById('openaiCollapse').classList.add('show')"><i class="bi bi-question-circle"></i></a></label>
+                                <input type="password" class="form-control" id="openai_api_key" name="openai_api_key" value="{{ current_user.openai_api_key or '' }}">
+                                <div class="form-text">Used for idea generation and voice narration</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="replicate_api_key" class="form-label">Replicate API Key <a href="#" data-bs-toggle="modal" data-bs-target="#apiKeysHelpModal" onclick="document.getElementById('replicateCollapse').classList.add('show')"><i class="bi bi-question-circle"></i></a></label>
+                                <input type="password" class="form-control" id="replicate_api_key" name="replicate_api_key" value="{{ current_user.replicate_api_key or '' }}">
+                                <div class="form-text">Used for image and video generation</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="sonauto_api_key" class="form-label">SonAuto API Key <a href="#" data-bs-toggle="modal" data-bs-target="#apiKeysHelpModal" onclick="document.getElementById('sonautoCollapse').classList.add('show')"><i class="bi bi-question-circle"></i></a></label>
+                                <input type="password" class="form-control" id="sonauto_api_key" name="sonauto_api_key" value="{{ current_user.sonauto_api_key or '' }}">
+                                <div class="form-text">Used for music generation</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save API Keys</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="subscription">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Subscription Plan</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h5 class="mb-1">Current Plan: {{ current_user.subscription_tier.capitalize() }}</h5>
+                                <p class="text-muted mb-0">
+                                    {% if current_user.subscription_tier == 'free' %}
+                                    3 videos per month, 720p resolution, 15-second maximum length
+                                    {% elif current_user.subscription_tier == 'pro' %}
+                                    20 videos per month, 1080p resolution, 30-second maximum length
+                                    {% elif current_user.subscription_tier == 'enterprise' %}
+                                    Unlimited videos, 4K resolution, 60-second maximum length
+                                    {% endif %}
+                                </p>
+                            </div>
+                            {% if current_user.subscription_tier != 'enterprise' %}
+                            <a href="#" class="btn btn-outline-primary">Upgrade Plan</a>
+                            {% endif %}
+                        </div>
+
+                        <div class="card-deck mb-3">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="card mb-4 {{ 'border-primary' if current_user.subscription_tier == 'free' else '' }}">
+                                        <div class="card-header py-3 {{ 'text-white bg-primary' if current_user.subscription_tier == 'free' else '' }}">
+                                            <h4 class="my-0 fw-normal text-center">Free</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <h1 class="card-title text-center">$0<small class="text-muted fw-light">/mo</small></h1>
+                                            <ul class="list-unstyled mt-3 mb-4">
+                                                <li>3 videos per month</li>
+                                                <li>720p resolution</li>
+                                                <li>15-second maximum length</li>
+                                                <li>Basic support</li>
+                                            </ul>
+                                            <div class="d-grid">
+                                                {% if current_user.subscription_tier == 'free' %}
+                                                <button class="btn btn-primary" disabled>Current Plan</button>
+                                                {% else %}
+                                                <button class="btn btn-outline-primary">Downgrade</button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card mb-4 {{ 'border-primary' if current_user.subscription_tier == 'pro' else '' }}">
+                                        <div class="card-header py-3 {{ 'text-white bg-primary' if current_user.subscription_tier == 'pro' else '' }}">
+                                            <h4 class="my-0 fw-normal text-center">Pro</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <h1 class="card-title text-center">$29<small class="text-muted fw-light">/mo</small></h1>
+                                            <ul class="list-unstyled mt-3 mb-4">
+                                                <li>20 videos per month</li>
+                                                <li>1080p resolution</li>
+                                                <li>30-second maximum length</li>
+                                                <li>Priority support</li>
+                                            </ul>
+                                            <div class="d-grid">
+                                                {% if current_user.subscription_tier == 'pro' %}
+                                                <button class="btn btn-primary" disabled>Current Plan</button>
+                                                {% elif current_user.subscription_tier == 'free' %}
+                                                <button class="btn btn-primary">Upgrade</button>
+                                                {% else %}
+                                                <button class="btn btn-outline-primary">Downgrade</button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card mb-4 {{ 'border-primary' if current_user.subscription_tier == 'enterprise' else '' }}">
+                                        <div class="card-header py-3 {{ 'text-white bg-primary' if current_user.subscription_tier == 'enterprise' else '' }}">
+                                            <h4 class="my-0 fw-normal text-center">Enterprise</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <h1 class="card-title text-center">$99<small class="text-muted fw-light">/mo</small></h1>
+                                            <ul class="list-unstyled mt-3 mb-4">
+                                                <li>Unlimited videos</li>
+                                                <li>4K resolution</li>
+                                                <li>60-second maximum length</li>
+                                                <li>24/7 dedicated support</li>
+                                            </ul>
+                                            <div class="d-grid">
+                                                {% if current_user.subscription_tier == 'enterprise' %}
+                                                <button class="btn btn-primary" disabled>Current Plan</button>
+                                                {% else %}
+                                                <button class="btn btn-primary">Upgrade</button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="usage">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Usage Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h6>Videos Generated This Month</h6>
+                            <div class="progress mb-2">
+                                <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">1/4</div>
+                            </div>
+                            <small class="text-muted">1 out of 4 videos used</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6>Storage Used</h6>
+                            <div class="progress mb-2">
+                                <div class="progress-bar" role="progressbar" style="width: 10%;" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100">10%</div>
+                            </div>
+                            <small class="text-muted">100MB out of 1GB used</small>
+                        </div>
+
+                        <div class="table-responsive">
+                            <h6>Recent Activity</h6>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Project</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>2023-11-15</td>
+                                        <td>Sample Project</td>
+                                        <td>Video Generated</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2023-11-14</td>
+                                        <td>Another Project</td>
+                                        <td>Project Created</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2023-11-10</td>
+                                        <td>Test Video</td>
+                                        <td>Video Downloaded</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- API Keys Help Modal -->
+<div class="modal fade" id="apiKeysHelpModal" tabindex="-1" aria-labelledby="apiKeysHelpModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="apiKeysHelpModalLabel">How to Get API Keys</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="accordion" id="apiKeysAccordion">
+                    <!-- OpenAI API Key Instructions -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="openaiHeading">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#openaiCollapse" aria-expanded="true" aria-controls="openaiCollapse">
+                                OpenAI API Key
+                            </button>
+                        </h2>
+                        <div id="openaiCollapse" class="accordion-collapse collapse show" aria-labelledby="openaiHeading" data-bs-parent="#apiKeysAccordion">
+                            <div class="accordion-body">
+                                <p>The OpenAI API key is used for generating creative ideas and voice narration in your videos.</p>
+
+                                <h6>Steps to get an OpenAI API key:</h6>
+                                <ol>
+                                    <li>Go to <a href="https://platform.openai.com/signup" target="_blank">OpenAI's platform</a> and sign up for an account if you don't already have one.</li>
+                                    <li>After signing in, navigate to the <a href="https://platform.openai.com/api-keys" target="_blank">API Keys section</a>.</li>
+                                    <li>Click on "Create new secret key".</li>
+                                    <li>Give your key a name (e.g., "AI Video Generator") and click "Create".</li>
+                                    <li>Copy the displayed API key (you won't be able to see it again).</li>
+                                    <li>Paste the key into the OpenAI API Key field in your account settings.</li>
+                                </ol>
+
+                                <div class="alert alert-info">
+                                    <strong>Note:</strong> OpenAI offers $5 in free credits for new accounts. After that, you'll need to add a payment method to continue using the API. Pricing is based on usage - see <a href="https://openai.com/pricing" target="_blank">OpenAI's pricing page</a> for details.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Replicate API Key Instructions -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="replicateHeading">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#replicateCollapse" aria-expanded="false" aria-controls="replicateCollapse">
+                                Replicate API Key
+                            </button>
+                        </h2>
+                        <div id="replicateCollapse" class="accordion-collapse collapse" aria-labelledby="replicateHeading" data-bs-parent="#apiKeysAccordion">
+                            <div class="accordion-body">
+                                <p>The Replicate API key is used for generating images and videos from your ideas.</p>
+
+                                <h6>Steps to get a Replicate API key:</h6>
+                                <ol>
+                                    <li>Go to <a href="https://replicate.com/signin" target="_blank">Replicate</a> and sign up for an account.</li>
+                                    <li>After signing in, navigate to your <a href="https://replicate.com/account/api-tokens" target="_blank">account settings</a>.</li>
+                                    <li>Under the "API tokens" section, click "Create token".</li>
+                                    <li>Give your token a name and click "Create token".</li>
+                                    <li>Copy the displayed API token.</li>
+                                    <li>Paste the token into the Replicate API Key field in your account settings.</li>
+                                </ol>
+
+                                <div class="alert alert-info">
+                                    <strong>Note:</strong> Replicate requires a payment method to be added to your account before you can use the API. They charge based on the models you use and how much you use them. See <a href="https://replicate.com/pricing" target="_blank">Replicate's pricing page</a> for details.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SonAuto API Key Instructions -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="sonautoHeading">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sonautoCollapse" aria-expanded="false" aria-controls="sonautoCollapse">
+                                SonAuto API Key
+                            </button>
+                        </h2>
+                        <div id="sonautoCollapse" class="accordion-collapse collapse" aria-labelledby="sonautoHeading" data-bs-parent="#apiKeysAccordion">
+                            <div class="accordion-body">
+                                <p>The SonAuto API key is used for generating custom music for your videos.</p>
+
+                                <h6>Steps to get a SonAuto API key:</h6>
+                                <ol>
+                                    <li>Go to <a href="https://sonauto.ai" target="_blank">SonAuto's website</a> and sign up for an account.</li>
+                                    <li>After signing in, navigate to the API section in your account settings.</li>
+                                    <li>Request an API key by filling out the developer access form.</li>
+                                    <li>Once approved, you'll receive your API key via email.</li>
+                                    <li>Copy the API key and paste it into the SonAuto API Key field in your account settings.</li>
+                                </ol>
+
+                                <div class="alert alert-info">
+                                    <strong>Note:</strong> SonAuto may have different pricing tiers for API access. Check their website for the most current pricing information.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

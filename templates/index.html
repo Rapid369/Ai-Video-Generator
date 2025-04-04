@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}AI Video Generator - Create Amazing Videos with AI{% endblock %}
+
+{% block content %}
+<section class="hero py-5">
+    <div class="row align-items-center">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold mb-4">Create Amazing Videos with AI</h1>
+            <p class="lead mb-4">
+                Generate professional-quality videos in minutes using our AI-powered platform.
+                From idea generation to final production, our system handles everything automatically.
+            </p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 me-md-2">Get Started</a>
+                <a href="#features" class="btn btn-outline-secondary btn-lg px-4">Learn More</a>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <img src="{{ url_for('static', filename='img/hero-image.jpg') }}" alt="AI Video Generator" class="img-fluid rounded shadow-lg">
+        </div>
+    </div>
+</section>
+
+<section id="features" class="py-5">
+    <h2 class="text-center mb-5">How It Works</h2>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-lightbulb fs-1"></i>
+                    </div>
+                    <h3 class="card-title">1. Generate Ideas</h3>
+                    <p class="card-text">Our AI generates creative concepts and prompts based on your input or from scratch.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-camera fs-1"></i>
+                    </div>
+                    <h3 class="card-title">2. Create Visuals</h3>
+                    <p class="card-text">The system generates stunning images and converts them into dynamic videos.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-music-note-beamed fs-1"></i>
+                    </div>
+                    <h3 class="card-title">3. Add Audio</h3>
+                    <p class="card-text">AI-generated music and voice narration are added to complete your video.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="pricing py-5 bg-light">
+    <h2 class="text-center mb-5">Pricing Plans</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header py-3">
+                    <h4 class="my-0 fw-normal text-center">Free</h4>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title text-center">$0<small class="text-muted fw-light">/mo</small></h1>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>3 videos per month</li>
+                        <li>720p resolution</li>
+                        <li>15-second maximum length</li>
+                        <li>Basic support</li>
+                    </ul>
+                    <div class="d-grid">
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-primary">Sign up for free</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header py-3">
+                    <h4 class="my-0 fw-normal text-center">Pro</h4>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title text-center">$29<small class="text-muted fw-light">/mo</small></h1>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>20 videos per month</li>
+                        <li>1080p resolution</li>
+                        <li>30-second maximum length</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <div class="d-grid">
+                        <a href="{{ url_for('register') }}" class="btn btn-primary">Get started</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header py-3">
+                    <h4 class="my-0 fw-normal text-center">Enterprise</h4>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title text-center">$99<small class="text-muted fw-light">/mo</small></h1>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Unlimited videos</li>
+                        <li>4K resolution</li>
+                        <li>60-second maximum length</li>
+                        <li>24/7 dedicated support</li>
+                    </ul>
+                    <div class="d-grid">
+                        <a href="{{ url_for('register') }}" class="btn btn-primary">Contact us</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="testimonials py-5">
+    <h2 class="text-center mb-5">What Our Users Say</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <p class="card-text">"This platform has revolutionized our marketing content. We can create professional videos in minutes instead of days."</p>
+                    <div class="d-flex align-items-center mt-3">
+                        <div class="flex-shrink-0">
+                            <img src="{{ url_for('static', filename='img/testimonial1.jpg') }}" alt="Testimonial" class="rounded-circle" width="50">
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mb-0">Sarah Johnson</h5>
+                            <p class="text-muted mb-0">Marketing Director</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <p class="card-text">"As a content creator, this tool has been a game-changer. I can produce more high-quality videos with less effort."</p>
+                    <div class="d-flex align-items-center mt-3">
+                        <div class="flex-shrink-0">
+                            <img src="{{ url_for('static', filename='img/testimonial2.jpg') }}" alt="Testimonial" class="rounded-circle" width="50">
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mb-0">Michael Chen</h5>
+                            <p class="text-muted mb-0">YouTuber</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <p class="card-text">"The quality of the AI-generated content is impressive. Our social media engagement has increased by 300% since we started using this service."</p>
+                    <div class="d-flex align-items-center mt-3">
+                        <div class="flex-shrink-0">
+                            <img src="{{ url_for('static', filename='img/testimonial3.jpg') }}" alt="Testimonial" class="rounded-circle" width="50">
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="mb-0">Emily Rodriguez</h5>
+                            <p class="text-muted mb-0">Social Media Manager</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

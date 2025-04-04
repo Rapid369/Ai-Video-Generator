@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - AI Video Generator{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-sidebar {
+        min-height: calc(100vh - 56px - 72px);
+        border-right: 1px solid #dee2e6;
+    }
+    
+    .admin-sidebar .nav-link {
+        color: #495057;
+        border-radius: 0;
+    }
+    
+    .admin-sidebar .nav-link.active {
+        color: #0d6efd;
+        background-color: #f8f9fa;
+        border-left: 3px solid #0d6efd;
+    }
+    
+    .admin-sidebar .nav-link:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .stats-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stats-icon {
+        font-size: 2rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+    }
+    
+    .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    
+    .stats-label {
+        font-size: 1rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3 col-lg-2">
+        <div class="admin-sidebar py-4">
+            <div class="px-3 mb-3">
+                <h5 class="text-muted">Admin Panel</h5>
+            </div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active ps-3" href="{{ url_for('admin.dashboard') }}">
+                        <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link ps-3" href="{{ url_for('admin.users') }}">
+                        <i class="bi bi-people me-2"></i> Users
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link ps-3" href="{{ url_for('admin.projects') }}">
+                        <i class="bi bi-film me-2"></i> Projects
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link ps-3" href="{{ url_for('admin.errors') }}">
+                        <i class="bi bi-exclamation-triangle me-2"></i> Errors
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link ps-3" href="{{ url_for('analytics.dashboard') }}">
+                        <i class="bi bi-graph-up me-2"></i> Analytics
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link ps-3" href="{{ url_for('admin.settings') }}">
+                        <i class="bi bi-gear me-2"></i> Settings
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="col-md-9 col-lg-10 py-4">
+        <h1 class="mb-4">Admin Dashboard</h1>
+        
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stats-card h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="stats-icon bg-primary text-white">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div>
+                            <div class="stats-value">{{ user_count }}</div>
+                            <div class="stats-label">Total Users</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="stats-icon bg-success text-white">
+                            <i class="bi bi-film"></i>
+                        </div>
+                        <div>
+                            <div class="stats-value">{{ project_count }}</div>
+                            <div class="stats-label">Total Projects</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="stats-icon bg-info text-white">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <div>
+                            <div class="stats-value">{{ completed_projects }}</div>
+                            <div class="stats-label">Completed Videos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="stats-icon bg-danger text-white">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <div class="stats-value">{{ error_count }}</div>
+                            <div class="stats-label">Errors</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Users</h5>
+                        <a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Subscription</th>
+                                        <th>Joined</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in recent_users %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('admin.user_detail', user_id=user.id) }}">
+                                                {{ user.name or 'Unnamed User' }}
+                                            </a>
+                                        </td>
+                                        <td>{{ user.email }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'primary' if user.subscription_tier == 'pro' else 'success' if user.subscription_tier == 'enterprise' else 'secondary' }}">
+                                                {{ user.subscription_tier }}
+                                            </span>
+                                        </td>
+                                        <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Projects</h5>
+                        <a href="{{ url_for('admin.projects') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>User</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for project in recent_projects %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('admin.project_detail', project_id=project.id) }}">
+                                                {{ project.title }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('admin.user_detail', user_id=project.user_id) }}">
+                                                {{ project.user.name or project.user.email }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if project.status == 'completed' else 'warning' if project.status == 'processing' else 'secondary' }}">
+                                                {{ project.status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ project.created_at.strftime('%Y-%m-%d') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Recent Errors</h5>
+                        <a href="{{ url_for('admin.errors') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Error Type</th>
+                                        <th>Message</th>
+                                        <th>User</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for error in recent_errors %}
+                                    <tr>
+                                        <td>{{ error.error_type }}</td>
+                                        <td>{{ error.error_message[:50] }}{% if error.error_message|length > 50 %}...{% endif %}</td>
+                                        <td>
+                                            {% if error.user_id %}
+                                            <a href="{{ url_for('admin.user_detail', user_id=error.user_id) }}">
+                                                {{ error.user.name or error.user.email }}
+                                            </a>
+                                            {% else %}
+                                            Anonymous
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ error.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

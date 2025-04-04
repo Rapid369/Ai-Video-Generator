@@ -1,0 +1,27 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Your Video is Ready!{% endblock %}
+
+{% block content %}
+<h2>Your Video is Ready!</h2>
+
+<p>Hi {{ user.name or 'there' }},</p>
+
+<p>Great news! Your video project "{{ project.title }}" has been successfully generated and is now ready for viewing.</p>
+
+<div class="text-center mt-4 mb-4">
+    <a href="{{ url_for('view_project', project_id=project.id, _external=True) }}" class="button">View Your Video</a>
+</div>
+
+<p>From your project page, you can:</p>
+<ul>
+    <li>Watch your video</li>
+    <li>Download it to your device</li>
+    <li>Share it on social media</li>
+    <li>Make edits or create a new version</li>
+</ul>
+
+<p>We hope you're happy with the result! If you'd like to create more videos, simply go to your dashboard and start a new project.</p>
+
+<p>Best regards,<br>The AI Video Generator Team</p>
+{% endblock %}

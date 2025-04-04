@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Project - AI Video Generator{% endblock %}
+
+{% block extra_css %}
+<style>
+    .generation-step {
+        border-left: 3px solid #dee2e6;
+        padding-left: 20px;
+        position: relative;
+        margin-bottom: 30px;
+    }
+    
+    .generation-step:before {
+        content: '';
+        position: absolute;
+        left: -10px;
+        top: 0;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: #fff;
+        border: 3px solid #dee2e6;
+    }
+    
+    .generation-step.active:before {
+        border-color: #0d6efd;
+    }
+    
+    .generation-step.completed:before {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    .generation-step.error:before {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ project.title }}</h1>
+    <div>
+        <a href="{{ url_for('view_project', project_id=project.id) }}" class="btn btn-outline-primary me-2">View Project</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Project Settings</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('edit_project', project_id=project.id) }}">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Project Title</label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{ project.title }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="idea" class="form-label">Idea/Concept</label>
+                        <textarea class="form-control" id="idea" name="idea" rows="3">{{ project.idea or '' }}</textarea>
+                        <div class="form-text">Enter your own idea or let AI generate one for you</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="prompt" class="form-label">Image/Video Prompt</label>
+                        <textarea class="form-control" id="prompt" name="prompt" rows="5">{{ project.prompt or '' }}</textarea>
+                        <div class="form-text">Detailed prompt for image and video generation</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Generation Process</h5>
+            </div>
+            <div class="card-body">
+                <div class="generation-step {{ 'completed' if project.idea else 'active' }}">
+                    <h5>Step 1: Generate Idea</h5>
+                    <p>Create a unique concept for your video</p>
+                    {% if not project.idea %}
+                    <button id="generate-idea" class="btn btn-sm btn-primary">Generate Idea</button>
+                    {% else %}
+                    <div class="alert alert-success">
+                        <strong>Generated Idea:</strong> {{ project.idea }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="generation-step {{ 'completed' if project.image_path else 'active' if project.idea else '' }}">
+                    <h5>Step 2: Generate Image</h5>
+                    <p>Create a visual representation of your idea</p>
+                    {% if project.idea and not project.image_path %}
+                    <button id="generate-image" class="btn btn-sm btn-primary">Generate Image</button>
+                    {% elif project.image_path %}
+                    <div class="mb-3">
+                        <img src="{{ url_for('static', filename=project.image_path) }}" class="img-fluid rounded" alt="{{ project.title }}">
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="generation-step {{ 'completed' if project.video_path else 'active' if project.image_path else '' }}">
+                    <h5>Step 3: Generate Video</h5>
+                    <p>Transform the image into a dynamic video</p>
+                    {% if project.image_path and not project.video_path %}
+                    <button id="generate-video" class="btn btn-sm btn-primary">Generate Video</button>
+                    {% elif project.video_path %}
+                    <div class="mb-3">
+                        <video class="img-fluid rounded" controls>
+                            <source src="{{ url_for('static', filename=project.video_path) }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="generation-step {{ 'completed' if project.music_path else 'active' if project.video_path else '' }}">
+                    <h5>Step 4: Generate Music</h5>
+                    <p>Create a soundtrack that matches your video's mood</p>
+                    {% if project.video_path and not project.music_path %}
+                    <button id="generate-music" class="btn btn-sm btn-primary">Generate Music</button>
+                    {% elif project.music_path %}
+                    <div class="mb-3">
+                        <audio controls class="w-100">
+                            <source src="{{ url_for('static', filename=project.music_path) }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="generation-step {{ 'completed' if project.voice_path else 'active' if project.video_path else '' }}">
+                    <h5>Step 5: Generate Voice Narration</h5>
+                    <p>Add a professional voiceover to your video</p>
+                    {% if project.video_path and not project.voice_path %}
+                    <button id="generate-voice" class="btn btn-sm btn-primary">Generate Voice</button>
+                    {% elif project.voice_path %}
+                    <div class="mb-3">
+                        <audio controls class="w-100">
+                            <source src="{{ url_for('static', filename=project.voice_path) }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="generation-step {{ 'completed' if project.final_video_path else 'active' if project.music_path and project.voice_path else '' }}">
+                    <h5>Step 6: Create Final Video</h5>
+                    <p>Combine video, music, and voice into the final product</p>
+                    {% if project.music_path and project.voice_path and not project.final_video_path %}
+                    <button id="create-final-video" class="btn btn-sm btn-primary">Create Final Video</button>
+                    {% elif project.final_video_path %}
+                    <div class="mb-3">
+                        <video class="img-fluid rounded" controls>
+                            <source src="{{ url_for('static', filename=project.final_video_path) }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <a href="{{ url_for('static', filename=project.final_video_path) }}" class="btn btn-success" download>Download Final Video</a>
+                    {% endif %}
+                </div>
+                
+                {% if not project.idea %}
+                <div class="text-center mt-4">
+                    <button id="generate-all" class="btn btn-lg btn-primary">Generate Complete Video</button>
+                    <p class="text-muted mt-2">This will run all steps automatically</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Project Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-{{ 'success' if project.status == 'completed' else 'warning' if project.status == 'processing' else 'secondary' }} me-2">
+                            {{ project.status.capitalize() }}
+                        </span>
+                        {% if project.status == 'processing' %}
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Created</label>
+                    <p class="mb-0">{{ project.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Last Updated</label>
+                    <p class="mb-0">{{ project.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Generation Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="video_duration" class="form-label">Video Duration</label>
+                    <select class="form-select" id="video_duration">
+                        <option value="10">10 seconds</option>
+                        <option value="15">15 seconds</option>
+                        <option value="30">30 seconds</option>
+                        <option value="60">60 seconds</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="aspect_ratio" class="form-label">Aspect Ratio</label>
+                    <select class="form-select" id="aspect_ratio">
+                        <option value="9:16">9:16 (Vertical/Mobile)</option>
+                        <option value="16:9">16:9 (Landscape)</option>
+                        <option value="1:1">1:1 (Square)</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="voice_type" class="form-label">Voice Type</label>
+                    <select class="form-select" id="voice_type">
+                        <option value="alloy">Alloy (Balanced)</option>
+                        <option value="echo">Echo (Baritone)</option>
+                        <option value="fable">Fable (British)</option>
+                        <option value="onyx">Onyx (Deep)</option>
+                        <option value="nova">Nova (Female)</option>
+                        <option value="shimmer">Shimmer (Cheerful)</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="music_style" class="form-label">Music Style</label>
+                    <select class="form-select" id="music_style">
+                        <option value="cinematic">Cinematic</option>
+                        <option value="ambient">Ambient</option>
+                        <option value="electronic">Electronic</option>
+                        <option value="orchestral">Orchestral</option>
+                        <option value="lofi">Lo-Fi</option>
+                    </select>
+                </div>
+                
+                <button id="save-settings" class="btn btn-primary">Save Settings</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // This would be replaced with actual AJAX calls to your backend
+    document.addEventListener('DOMContentLoaded', function() {
+        // Generate Idea button
+        document.getElementById('generate-idea')?.addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+            
+            // Simulate API call
+            setTimeout(() => {
+                fetch('/project/{{ project.id }}/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ step: 'idea' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'processing') {
+                        // Reload the page to show updated status
+                        window.location.reload();
+                    }
+                });
+            }, 1000);
+        });
+        
+        // Generate All button
+        document.getElementById('generate-all')?.addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+            
+            // Simulate API call
+            setTimeout(() => {
+                fetch('/project/{{ project.id }}/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ step: 'all' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'processing') {
+                        // Reload the page to show updated status
+                        window.location.reload();
+                    }
+                });
+            }, 1000);
+        });
+        
+        // Other generation step buttons would have similar event listeners
+    });
+</script>
+{% endblock %}

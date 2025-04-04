@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} - AI Video Generator{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ project.title }}</h1>
+    <div>
+        <a href="{{ url_for('edit_project', project_id=project.id) }}" class="btn btn-primary me-2">Edit Project</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        {% if project.final_video_path %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Final Video</h5>
+                <div class="ratio ratio-16x9">
+                    <video controls>
+                        <source src="{{ url_for('static', filename=project.final_video_path) }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                <div class="mt-3">
+                    <a href="{{ url_for('static', filename=project.final_video_path) }}" class="btn btn-success" download>Download Video</a>
+                    <button class="btn btn-outline-primary ms-2">Share</button>
+                </div>
+            </div>
+        </div>
+        {% elif project.status == 'processing' %}
+        <div class="card mb-4">
+            <div class="card-body text-center py-5">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5>Your video is being generated...</h5>
+                <p class="text-muted">This may take a few minutes. You can leave this page and come back later.</p>
+            </div>
+        </div>
+        {% elif project.status == 'draft' %}
+        <div class="card mb-4">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-film" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Your project is ready to generate</h5>
+                <p class="text-muted">Go to the edit page to start the generation process.</p>
+                <a href="{{ url_for('edit_project', project_id=project.id) }}" class="btn btn-primary mt-2">Start Generation</a>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="row">
+            {% if project.image_path %}
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Generated Image</h5>
+                        <img src="{{ url_for('static', filename=project.image_path) }}" class="img-fluid rounded" alt="{{ project.title }}">
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if project.video_path %}
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Raw Video</h5>
+                        <video class="img-fluid rounded" controls>
+                            <source src="{{ url_for('static', filename=project.video_path) }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="row">
+            {% if project.music_path %}
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Generated Music</h5>
+                        <audio controls class="w-100">
+                            <source src="{{ url_for('static', filename=project.music_path) }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if project.voice_path %}
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Voice Narration</h5>
+                        <audio controls class="w-100">
+                            <source src="{{ url_for('static', filename=project.voice_path) }}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Project Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Status</label>
+                    <div>
+                        <span class="badge bg-{{ 'success' if project.status == 'completed' else 'warning' if project.status == 'processing' else 'secondary' }}">
+                            {{ project.status.capitalize() }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Created</label>
+                    <div>{{ project.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Last Updated</label>
+                    <div>{{ project.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                </div>
+                
+                {% if project.idea %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Idea/Concept</label>
+                    <div>{{ project.idea }}</div>
+                </div>
+                {% endif %}
+                
+                {% if project.prompt %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Prompt</label>
+                    <div class="text-muted small">{{ project.prompt }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Similar Projects</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Project Title 1</h6>
+                            <small>3 days ago</small>
+                        </div>
+                        <small class="text-muted">Brief description of the project</small>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Project Title 2</h6>
+                            <small>1 week ago</small>
+                        </div>
+                        <small class="text-muted">Brief description of the project</small>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Project Title 3</h6>
+                            <small>2 weeks ago</small>
+                        </div>
+                        <small class="text-muted">Brief description of the project</small>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

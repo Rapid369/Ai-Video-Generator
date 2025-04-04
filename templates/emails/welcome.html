@@ -1,0 +1,30 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Welcome to AI Video Generator{% endblock %}
+
+{% block content %}
+<h2>Welcome to AI Video Generator!</h2>
+
+<p>Hi {{ user.name or 'there' }},</p>
+
+<p>Thank you for joining AI Video Generator! We're excited to have you on board.</p>
+
+<p>With our platform, you can create amazing videos using AI technology. Here's what you can do:</p>
+
+<ul>
+    <li>Generate creative ideas for your videos</li>
+    <li>Create stunning images and videos</li>
+    <li>Add AI-generated music and voice narration</li>
+    <li>Combine everything into a professional-quality video</li>
+</ul>
+
+<p>To get started, simply log in to your account and create your first project.</p>
+
+<div class="text-center mt-4 mb-4">
+    <a href="{{ url_for('dashboard', _external=True) }}" class="button">Go to Dashboard</a>
+</div>
+
+<p>If you have any questions or need assistance, feel free to contact our support team.</p>
+
+<p>Best regards,<br>The AI Video Generator Team</p>
+{% endblock %}

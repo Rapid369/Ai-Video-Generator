@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - AI Video Generator{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+<style>
+    .stats-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stats-icon {
+        font-size: 2rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+    }
+    
+    .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    
+    .stats-label {
+        font-size: 1rem;
+        color: #6c757d;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Analytics Dashboard</h1>
+    <div class="btn-group">
+        <a href="{{ url_for('analytics.dashboard') }}" class="btn btn-primary active">Overview</a>
+        <a href="{{ url_for('analytics.user_analytics') }}" class="btn btn-outline-primary">Users</a>
+        <a href="{{ url_for('analytics.project_analytics') }}" class="btn btn-outline-primary">Projects</a>
+        <a href="{{ url_for('analytics.api_analytics') }}" class="btn btn-outline-primary">API Usage</a>
+        <a href="{{ url_for('analytics.error_analytics') }}" class="btn btn-outline-primary">Errors</a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="stats-icon bg-primary text-white">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div>
+                    <div class="stats-value">{{ user_count }}</div>
+                    <div class="stats-label">Total Users</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="stats-icon bg-success text-white">
+                    <i class="bi bi-film"></i>
+                </div>
+                <div>
+                    <div class="stats-value">{{ project_count }}</div>
+                    <div class="stats-label">Total Projects</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="stats-icon bg-info text-white">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div>
+                    <div class="stats-value">{{ completed_projects }}</div>
+                    <div class="stats-label">Completed Videos</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="stats-icon bg-danger text-white">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div>
+                    <div class="stats-value">{{ error_count }}</div>
+                    <div class="stats-label">Errors</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">User Registrations (Last 30 Days)</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="userTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Project Creation (Last 30 Days)</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="projectTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Subscription Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="subscriptionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Average Generation Times (seconds)</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="generationTimesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // User Registration Trend Chart
+        const userTrendData = {{ user_trend|tojson }};
+        const userTrendDates = Object.keys(userTrendData).sort();
+        const userTrendCounts = userTrendDates.map(date => userTrendData[date]);
+        
+        new Chart(document.getElementById('userTrendChart'), {
+            type: 'line',
+            data: {
+                labels: userTrendDates,
+                datasets: [{
+                    label: 'New Users',
+                    data: userTrendCounts,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Project Creation Trend Chart
+        const projectTrendData = {{ project_trend|tojson }};
+        const projectTrendDates = Object.keys(projectTrendData).sort();
+        const projectTrendCounts = projectTrendDates.map(date => projectTrendData[date]);
+        
+        new Chart(document.getElementById('projectTrendChart'), {
+            type: 'line',
+            data: {
+                labels: projectTrendDates,
+                datasets: [{
+                    label: 'New Projects',
+                    data: projectTrendCounts,
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Subscription Distribution Chart
+        const subscriptionData = {{ subscription_distribution|tojson }};
+        const subscriptionLabels = Object.keys(subscriptionData);
+        const subscriptionCounts = subscriptionLabels.map(label => subscriptionData[label]);
+        
+        new Chart(document.getElementById('subscriptionChart'), {
+            type: 'doughnut',
+            data: {
+                labels: subscriptionLabels,
+                datasets: [{
+                    data: subscriptionCounts,
+                    backgroundColor: [
+                        '#6c757d',  // free
+                        '#0d6efd',  // pro
+                        '#198754',  // enterprise
+                        '#dc3545'   // admin
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+        
+        // Generation Times Chart
+        const generationTimes = {{ generation_times|tojson }};
+        
+        new Chart(document.getElementById('generationTimesChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Image', 'Video', 'Music', 'Voice', 'Final'],
+                datasets: [{
+                    label: 'Average Time (seconds)',
+                    data: [
+                        generationTimes.image,
+                        generationTimes.video,
+                        generationTimes.music,
+                        generationTimes.voice,
+                        generationTimes.final
+                    ],
+                    backgroundColor: [
+                        'rgba(13, 110, 253, 0.7)',
+                        'rgba(25, 135, 84, 0.7)',
+                        'rgba(255, 193, 7, 0.7)',
+                        'rgba(13, 202, 240, 0.7)',
+                        'rgba(108, 117, 125, 0.7)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

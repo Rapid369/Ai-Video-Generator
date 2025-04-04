@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied - AI Video Generator{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <div class="mb-4">
+        <i class="bi bi-shield-lock" style="font-size: 5rem; color: #dc3545;"></i>
+    </div>
+    <h2>Access Denied</h2>
+    <p class="lead text-muted">You don't have permission to access the analytics dashboard.</p>
+    <p class="mb-4">This feature is only available to administrators.</p>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">Return to Dashboard</a>
+</div>
+{% endblock %}

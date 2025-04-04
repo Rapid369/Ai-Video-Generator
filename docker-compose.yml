@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_DEBUG=1
+      - FLASK_SECRET_KEY=dev-secret-key
+      - DATABASE_URL=sqlite:///aivideo.db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+    command: flask run --host=0.0.0.0
+
+  worker:
+    build: .
+    volumes:
+      - .:/app
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_SECRET_KEY=dev-secret-key
+      - DATABASE_URL=sqlite:///aivideo.db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+    command: celery -A tasks.celery worker --loglevel=info
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"

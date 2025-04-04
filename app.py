@@ -354,6 +354,20 @@ def set_theme():
     session['theme'] = theme
     return jsonify({'status': 'success', 'theme': theme})
 
+# Test Pexels API route
+@app.route('/test-pexels')
+def test_pexels():
+    """Test the Pexels API integration."""
+    from services.pexels_service import PexelsService
+    pexels = PexelsService()
+    results = pexels.search_stock_videos('nature', per_page=3)
+    return jsonify({
+        'status': 'success',
+        'api_key_present': bool(pexels.api_key),
+        'results_count': len(results),
+        'results': results
+    })
+
 # Create database tables
 with app.app_context():
     db.create_all()

@@ -10,7 +10,7 @@
         position: relative;
         margin-bottom: 30px;
     }
-    
+
     .generation-step:before {
         content: '';
         position: absolute;
@@ -22,16 +22,16 @@
         background-color: #fff;
         border: 3px solid #dee2e6;
     }
-    
+
     .generation-step.active:before {
         border-color: #0d6efd;
     }
-    
+
     .generation-step.completed:before {
         background-color: #0d6efd;
         border-color: #0d6efd;
     }
-    
+
     .generation-step.error:before {
         background-color: #dc3545;
         border-color: #dc3545;
@@ -60,24 +60,24 @@
                         <label for="title" class="form-label">Project Title</label>
                         <input type="text" class="form-control" id="title" name="title" value="{{ project.title }}" required>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="idea" class="form-label">Idea/Concept</label>
                         <textarea class="form-control" id="idea" name="idea" rows="3">{{ project.idea or '' }}</textarea>
                         <div class="form-text">Enter your own idea or let AI generate one for you</div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="prompt" class="form-label">Image/Video Prompt</label>
                         <textarea class="form-control" id="prompt" name="prompt" rows="5">{{ project.prompt or '' }}</textarea>
                         <div class="form-text">Detailed prompt for image and video generation</div>
                     </div>
-                    
+
                     <button type="submit" class="btn btn-primary">Save Changes</button>
                 </form>
             </div>
         </div>
-        
+
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">Generation Process</h5>
@@ -94,7 +94,7 @@
                     </div>
                     {% endif %}
                 </div>
-                
+
                 <div class="generation-step {{ 'completed' if project.image_path else 'active' if project.idea else '' }}">
                     <h5>Step 2: Generate Image</h5>
                     <p>Create a visual representation of your idea</p>
@@ -106,11 +106,18 @@
                     </div>
                     {% endif %}
                 </div>
-                
+
                 <div class="generation-step {{ 'completed' if project.video_path else 'active' if project.image_path else '' }}">
                     <h5>Step 3: Generate Video</h5>
                     <p>Transform the image into a dynamic video</p>
                     {% if project.image_path and not project.video_path %}
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="use-stock-videos" checked>
+                            <label class="form-check-label" for="use-stock-videos">Use royalty-free stock videos</label>
+                        </div>
+                        <small class="text-muted">Uses Pexels API to find relevant stock videos based on your idea</small>
+                    </div>
                     <button id="generate-video" class="btn btn-sm btn-primary">Generate Video</button>
                     {% elif project.video_path %}
                     <div class="mb-3">
@@ -121,7 +128,7 @@
                     </div>
                     {% endif %}
                 </div>
-                
+
                 <div class="generation-step {{ 'completed' if project.music_path else 'active' if project.video_path else '' }}">
                     <h5>Step 4: Generate Music</h5>
                     <p>Create a soundtrack that matches your video's mood</p>
@@ -136,7 +143,7 @@
                     </div>
                     {% endif %}
                 </div>
-                
+
                 <div class="generation-step {{ 'completed' if project.voice_path else 'active' if project.video_path else '' }}">
                     <h5>Step 5: Generate Voice Narration</h5>
                     <p>Add a professional voiceover to your video</p>
@@ -151,7 +158,7 @@
                     </div>
                     {% endif %}
                 </div>
-                
+
                 <div class="generation-step {{ 'completed' if project.final_video_path else 'active' if project.music_path and project.voice_path else '' }}">
                     <h5>Step 6: Create Final Video</h5>
                     <p>Combine video, music, and voice into the final product</p>
@@ -167,7 +174,7 @@
                     <a href="{{ url_for('static', filename=project.final_video_path) }}" class="btn btn-success" download>Download Final Video</a>
                     {% endif %}
                 </div>
-                
+
                 {% if not project.idea %}
                 <div class="text-center mt-4">
                     <button id="generate-all" class="btn btn-lg btn-primary">Generate Complete Video</button>
@@ -177,7 +184,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-md-4">
         <div class="card mb-4">
             <div class="card-header">
@@ -197,19 +204,19 @@
                         {% endif %}
                     </div>
                 </div>
-                
+
                 <div class="mb-3">
                     <label class="form-label">Created</label>
                     <p class="mb-0">{{ project.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
                 </div>
-                
+
                 <div class="mb-3">
                     <label class="form-label">Last Updated</label>
                     <p class="mb-0">{{ project.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
                 </div>
             </div>
         </div>
-        
+
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">Generation Settings</h5>
@@ -224,7 +231,7 @@
                         <option value="60">60 seconds</option>
                     </select>
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="aspect_ratio" class="form-label">Aspect Ratio</label>
                     <select class="form-select" id="aspect_ratio">
@@ -233,7 +240,7 @@
                         <option value="1:1">1:1 (Square)</option>
                     </select>
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="voice_type" class="form-label">Voice Type</label>
                     <select class="form-select" id="voice_type">
@@ -245,7 +252,7 @@
                         <option value="shimmer">Shimmer (Cheerful)</option>
                     </select>
                 </div>
-                
+
                 <div class="mb-3">
                     <label for="music_style" class="form-label">Music Style</label>
                     <select class="form-select" id="music_style">
@@ -256,7 +263,7 @@
                         <option value="lofi">Lo-Fi</option>
                     </select>
                 </div>
-                
+
                 <button id="save-settings" class="btn btn-primary">Save Settings</button>
             </div>
         </div>
@@ -272,7 +279,7 @@
         document.getElementById('generate-idea')?.addEventListener('click', function() {
             this.disabled = true;
             this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
-            
+
             // Simulate API call
             setTimeout(() => {
                 fetch('/project/{{ project.id }}/generate', {
@@ -291,32 +298,154 @@
                 });
             }, 1000);
         });
-        
+
         // Generate All button
         document.getElementById('generate-all')?.addEventListener('click', function() {
             this.disabled = true;
             this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
-            
-            // Simulate API call
-            setTimeout(() => {
-                fetch('/project/{{ project.id }}/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ step: 'all' })
+
+            // Get the stock video preference if the checkbox exists
+            let useStock = true; // Default to true
+            const stockCheckbox = document.getElementById('use-stock-videos');
+            if (stockCheckbox) {
+                useStock = stockCheckbox.checked;
+            }
+
+            // API call
+            fetch('/project/{{ project.id }}/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    step: 'all',
+                    use_stock: useStock
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'processing') {
-                        // Reload the page to show updated status
-                        window.location.reload();
-                    }
-                });
-            }, 1000);
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'processing' || data.status === 'completed') {
+                    // Reload the page to show updated status
+                    window.location.reload();
+                }
+            });
         });
-        
-        // Other generation step buttons would have similar event listeners
+
+        // Generate Image button
+        document.getElementById('generate-image')?.addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+
+            // API call
+            fetch('/project/{{ project.id }}/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ step: 'image' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'processing' || data.status === 'completed') {
+                    // Reload the page to show updated status
+                    window.location.reload();
+                }
+            });
+        });
+
+        // Generate Video button
+        document.getElementById('generate-video')?.addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+
+            // Get the stock video preference
+            const useStock = document.getElementById('use-stock-videos').checked;
+
+            // API call
+            fetch('/project/{{ project.id }}/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    step: 'video',
+                    use_stock: useStock
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'processing' || data.status === 'completed') {
+                    // Reload the page to show updated status
+                    window.location.reload();
+                }
+            });
+        });
+
+        // Generate Music button
+        document.getElementById('generate-music')?.addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+
+            // API call
+            fetch('/project/{{ project.id }}/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ step: 'music' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'processing' || data.status === 'completed') {
+                    // Reload the page to show updated status
+                    window.location.reload();
+                }
+            });
+        });
+
+        // Generate Voice button
+        document.getElementById('generate-voice')?.addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+
+            // API call
+            fetch('/project/{{ project.id }}/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ step: 'voice' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'processing' || data.status === 'completed') {
+                    // Reload the page to show updated status
+                    window.location.reload();
+                }
+            });
+        });
+
+        // Create Final Video button
+        document.getElementById('create-final')?.addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creating...';
+
+            // API call
+            fetch('/project/{{ project.id }}/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ step: 'final' })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'processing' || data.status === 'completed') {
+                    // Reload the page to show updated status
+                    window.location.reload();
+                }
+            });
+        });
     });
 </script>
 {% endblock %}

@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import re
 import requests
 from pathlib import Path
 import replicate
@@ -8,6 +9,8 @@ from openai import OpenAI
 import subprocess
 from flask import current_app
 from storage import storage_manager
+from PIL import Image, ImageDraw, ImageFont
+from services.pexels_service import PexelsService
 
 class VideoGenerationService:
     """Service for handling video generation tasks."""
@@ -19,6 +22,9 @@ class VideoGenerationService:
 
         # Set up API clients based on user's API keys or default to environment variables
         self.setup_api_clients()
+
+        # Initialize Pexels service
+        self.pexels_service = PexelsService()
 
         # Ensure output directories exist
         Path("static/image").mkdir(exist_ok=True, parents=True)
@@ -115,6 +121,33 @@ class VideoGenerationService:
 
         print(f"Idea generated: {idea[:50]}...")
         return {"idea": idea, "prompt": prompt}
+
+    def extract_keywords_from_text(self, text, num_keywords=3):
+        """Extract keywords from text using OpenAI."""
+        print(f"Extracting keywords from text...")
+
+        if not self.openai_client.api_key or self.openai_client.api_key == "your-openai-api-key":
+            print("No OpenAI API key found. Using demo mode with predefined keywords.")
+            # Use predefined keywords for demo purposes
+            return ["nature", "landscape", "mountains"]
+
+        try:
+            response = self.openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "You are a keyword extraction assistant."},
+                    {"role": "user", "content": f"Extract {num_keywords} main visual keywords from this text that would be good for finding stock videos. Return only the keywords separated by commas, no explanations: {text}"}
+                ]
+            )
+
+            keywords_text = response.choices[0].message.content.strip()
+            keywords = [k.strip() for k in keywords_text.split(',')]
+
+            print(f"Extracted keywords: {keywords}")
+            return keywords
+        except Exception as e:
+            print(f"Error extracting keywords: {str(e)}")
+            return ["nature", "landscape", "mountains"]  # Fallback keywords
 
     def generate_image(self, prompt):
         """Generate an image using Flux AI."""
@@ -430,6 +463,136 @@ class VideoGenerationService:
             else:
                 raise Exception(f"Error initiating music generation: {response.text}")
 
+    def create_placeholder_video(self, output_path, duration=10):
+        """Create a placeholder video with a colored background."""
+        try:
+            # Create a colored image
+            width, height = 1280, 720
+            img = Image.new('RGB', (width, height), color=(30, 64, 175))  # Dark blue color
+
+            # Add text
+            draw = ImageDraw.Draw(img)
+            try:
+                # Try to use a system font
+                font = ImageFont.truetype("Arial", 60)
+            except IOError:
+                # Fall back to default font
+                font = ImageFont.load_default()
+
+            text = "AI Video Generator"
+            text_width, text_height = draw.textbbox((0, 0), text, font=font)[2:4]
+            position = ((width - text_width) // 2, (height - text_height) // 2)
+            draw.text(position, text, fill=(255, 255, 255), font=font)
+
+            # Save the image
+            img_path = output_path.replace('.mp4', '.png')
+            img.save(img_path)
+
+            # Create a video from the image
+            command = [
+                "ffmpeg",
+                "-loop", "1",
+                "-i", img_path,
+                "-c:v", "libx264",
+                "-t", str(duration),
+                "-pix_fmt", "yuv420p",
+                "-y",
+                output_path
+            ]
+
+            subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            # Remove the temporary image
+            os.remove(img_path)
+
+            return True
+        except Exception as e:
+            print(f"Error creating placeholder video: {str(e)}")
+
+            # Create an empty file as a last resort
+            with open(output_path, "wb") as f:
+                f.write(b"Placeholder video file")
+
+            return False
+
+    def generate_video_from_stock(self, idea, script=None):
+        """Generate a video using royalty-free stock footage."""
+        print("Generating video using stock footage...")
+
+        # Use script if provided, otherwise use idea
+        text_for_keywords = script if script else idea
+
+        # Extract keywords from the text
+        keywords = self.extract_keywords_from_text(text_for_keywords)
+
+        # Generate a unique directory for this project
+        timestamp = int(time.time())
+        project_dir = f"static/video/stock_{timestamp}"
+        os.makedirs(project_dir, exist_ok=True)
+
+        # Search and download videos for each keyword
+        clip_paths = []
+        for i, keyword in enumerate(keywords):
+            videos = self.pexels_service.search_stock_videos(keyword, per_page=3)
+
+            if videos and len(videos) > 0:
+                video = videos[0]  # Use the first video
+                output_path = f"{project_dir}/video_{i}.mp4"
+
+                downloaded = self.pexels_service.download_stock_video(video["url"], output_path)
+                if downloaded:
+                    clip_paths.append(output_path)
+
+        if not clip_paths:
+            print("No stock videos found. Using placeholder video.")
+            # Create a placeholder video
+            placeholder_path = f"{project_dir}/placeholder.mp4"
+            self.create_placeholder_video(placeholder_path, 10)  # 10 seconds
+            clip_paths = [placeholder_path]
+
+        # Combine videos using FFmpeg
+        output_video = f"static/video/stock_video_{timestamp}.mp4"
+
+        # Create a file list for FFmpeg
+        file_list_path = f"{project_dir}/filelist.txt"
+        with open(file_list_path, 'w') as f:
+            for clip_path in clip_paths:
+                f.write(f"file '{os.path.abspath(clip_path)}'\n")
+
+        # Combine videos using FFmpeg
+        command = [
+            "ffmpeg",
+            "-f", "concat",
+            "-safe", "0",
+            "-i", file_list_path,
+            "-c:v", "libx264",
+            "-pix_fmt", "yuv420p",
+            "-y",
+            output_video
+        ]
+
+        try:
+            subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            # Update project with the video path
+            if self.project:
+                self.project.video_path = output_video.replace("static/", "")
+
+            print(f"Stock video created and saved to {output_video}")
+            return output_video
+        except Exception as e:
+            print(f"Error creating stock video: {str(e)}")
+            # Create a placeholder video as fallback
+            placeholder_path = f"{project_dir}/placeholder.mp4"
+            self.create_placeholder_video(placeholder_path, 10)  # 10 seconds
+
+            # Update project with the placeholder video path
+            if self.project:
+                self.project.video_path = placeholder_path.replace("static/", "")
+
+            print(f"Placeholder video saved to {placeholder_path}")
+            return placeholder_path
+
     def create_final_video(self, video_path, music_path, idea, voice_data):
         """Create the final video with music and voice narration."""
         print("Creating final video with music and voice narration...")
@@ -495,8 +658,12 @@ class VideoGenerationService:
                 print(f"Error creating placeholder final video: {str(inner_e)}")
                 raise
 
-    def generate_complete_video(self):
-        """Run the complete video generation pipeline."""
+    def generate_complete_video(self, use_stock=True):
+        """Run the complete video generation pipeline.
+
+        Args:
+            use_stock (bool): Whether to use stock videos from Pexels (True) or AI-generated videos (False)
+        """
         try:
             # Update project status
             if self.project:
@@ -506,14 +673,17 @@ class VideoGenerationService:
             result = self.generate_idea()
             idea, prompt = result["idea"], result["prompt"]
 
-            # Step 2: Generate image
+            # Step 2: Generate image (still needed for thumbnail)
             image_path = self.generate_image(prompt)
 
             # Step 3: Generate voice dialog
             voice_data = self.generate_voice_dialog(idea)
 
-            # Step 4: Generate video
-            video_path = self.generate_video(image_path, prompt)
+            # Step 4: Generate video (either from stock or AI)
+            if use_stock:
+                video_path = self.generate_video_from_stock(idea)
+            else:
+                video_path = self.generate_video(image_path, prompt)
 
             # Step 5: Generate music
             music_path = self.generate_music(idea)

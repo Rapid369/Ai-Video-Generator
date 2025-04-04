@@ -206,6 +206,9 @@ def generate_project(project_id):
     # Get the generation step from the request
     step = request.json.get('step', 'all')
 
+    # Check if we should use stock videos (default to True)
+    use_stock = request.json.get('use_stock', True)
+
     # Update project status
     project.status = 'processing'
     db.session.commit()
@@ -217,7 +220,7 @@ def generate_project(project_id):
     try:
         if step == 'all':
             # Generate complete video
-            result = service.generate_complete_video()
+            result = service.generate_complete_video(use_stock=use_stock)
         elif step == 'idea':
             # Generate idea only
             result = service.generate_idea()
@@ -228,8 +231,11 @@ def generate_project(project_id):
             project.status = 'draft'
             result = {'status': 'completed', 'message': 'Image generated successfully'}
         elif step == 'video':
-            # Generate video from image
-            video_path = service.generate_video(f"static/{project.image_path}", project.prompt)
+            # Generate video (either from stock or AI)
+            if use_stock:
+                video_path = service.generate_video_from_stock(project.idea)
+            else:
+                video_path = service.generate_video(f"static/{project.image_path}", project.prompt)
             project.status = 'draft'
             result = {'status': 'completed', 'message': 'Video generated successfully'}
         elif step == 'music':
